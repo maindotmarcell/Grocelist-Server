@@ -4,12 +4,7 @@ const cors = require('cors'); // cors is a middleware
 const mongoose = require('mongoose');
 const User = require('./models/user.model');
 const jwt = require('jsonwebtoken');
-
-const passport = require('passport');
-const passportLocal = require('passport-local').Strategy;
-const cookieParser = require('cookie-parser');
 const bcrypt = require('bcrypt');
-const expressSession = require('express-session');
 const bodyParser = require('body-parser');
 
 // ------------------------------ END OF IMPORTS --------------------------------
