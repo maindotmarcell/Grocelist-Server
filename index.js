@@ -14,12 +14,7 @@ const app = express();
 // MIDDLEWARE
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
-app.use(
-	cors({
-		origin: 'http://localhost:3000',
-		credentials: true,
-	})
-);
+app.use(cors());
 
 // ------------------------------ END OF MIDDLEWARE --------------------------------
 
@@ -30,12 +25,19 @@ app.post('/api/register', async (req, res) => {
 	console.log(req.body);
 	try {
 		const newPassword = await bcrypt.hash(req.body.password, 10);
-		await User.create({
+		const user = await User.create({
 			name: req.body.name,
 			email: req.body.email,
 			password: newPassword,
 		});
-		res.json({ status: 'ok' });
+		const token = jwt.sign(
+			{
+				name: user.name,
+				email: user.email,
+			},
+			'secret123'
+		);
+		res.json({ status: 'ok', user: token });
 	} catch (err) {
 		res.json({ status: 'error', error: 'Duplicate email' });
 	}
@@ -71,19 +73,19 @@ app.post('/api/login', async (req, res) => {
 });
 
 app.get('/api/current-user', async (req, res) => {
-	const token = req.headers['x-access-token']
+	const token = req.headers['x-access-token'];
 
 	try {
-		const decoded = jwt.verify(token, 'secret123')
-		const email = decoded.email
-		const user = await User.findOne({ email: email })
+		const decoded = jwt.verify(token, 'secret123');
+		const email = decoded.email;
+		const user = await User.findOne({ email: email });
 
-		return res.json({ status: 'ok', name: user.name })
+		return res.json({ status: 'ok', name: user.name });
 	} catch (error) {
-		console.log(error)
-		res.json({ status: 'error', error: 'invalid token' })
+		// console.log(error);
+		res.json({ status: 'error', error: 'invalid token' });
 	}
-})
+});
 
 // ------------------------- END OF ROUTES ------------------------------
 
