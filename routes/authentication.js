@@ -1,5 +1,5 @@
 const express = require('express');
-const User = require('../models/user.model')
+const User = require('../models/user.model');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
 
@@ -22,8 +22,15 @@ router.post('/register', async (req, res) => {
 			},
 			'secret123'
 		);
-        console.log(user);
-		res.json({ status: 'ok', user: token });
+		const contextUser = {
+			id: user._id,
+			name: user.name,
+			email: user.email,
+			token: token,
+		};
+
+		console.log(user);
+		res.json({ status: 'ok', user: contextUser });
 	} catch (err) {
 		res.json({ status: 'error', error: 'Duplicate email' });
 	}
@@ -52,8 +59,14 @@ router.post('/login', async (req, res) => {
 			},
 			'secret123'
 		);
+		const contextUser = {
+			id: user._id,
+			name: user.name,
+			email: user.email,
+			token: token,
+		};
 
-		return res.json({ status: 'ok', user: token });
+		return res.json({ status: 'ok', user: contextUser });
 	} else {
 		return res.json({ status: 'error', user: false });
 	}
@@ -67,8 +80,13 @@ router.get('/current-user', async (req, res) => {
 		const decoded = jwt.verify(token, 'secret123');
 		const email = decoded.email;
 		const user = await User.findOne({ email: email });
-
-		return res.json({ status: 'ok', user });
+		const currentUser = {
+			id: user._id,
+			name: user.name,
+			email: user.email,
+			token,
+		};
+		return res.json({ status: 'ok', user: currentUser });
 	} catch (error) {
 		// console.log(error);
 		res.json({ status: 'error', error });
