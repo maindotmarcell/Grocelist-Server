@@ -4,6 +4,8 @@ const Group = require('../models/group.model');
 
 const router = express.Router();
 
+// ------------------ Development/admin api calls ------------------------
+
 // handles create group request, creates it in mongo db
 router.post('/create-group', async (req, res) => {
 	try {
@@ -58,6 +60,23 @@ router.post('/add-group-member', async (req, res) => {
 			error:
 				'Oops, something went wrong! User was not added to the selected group.',
 		});
+	}
+});
+
+// ---------------------- public api calls -----------------------------------
+
+router.get('/:id', async (req, res) => {
+	try {
+		const user = await User.findById(req.params.id);
+		const groupIDs = user.groups;
+		const groupProms = groupIDs.map(
+			async (groupID) => await Group.findById(groupID)
+		);
+		const groups = await Promise.all(groupProms);
+
+		res.json({ status: 'ok', groups });
+	} catch (err) {
+		res.json({ status: 'error', error: err });
 	}
 });
 
