@@ -11,6 +11,8 @@ router.post('/create-group', async (req, res) => {
 	try {
 		const user = await Group.create({
 			name: req.body.group_name,
+			dashboard: {},
+			list: {},
 		});
 		res.json({ status: 'ok' });
 	} catch (err) {
