@@ -1,15 +1,19 @@
 const express = require('express');
 const User = require('../models/user.model');
 const Group = require('../models/group.model');
+const validateUser = require('../middleware/validateUser');
+const jwt = require('jsonwebtoken');
 
 const router = express.Router();
 
 // ------------------ Development/admin api calls ------------------------
 
+router.use(validateUser);
+
 // handles create group request, creates it in mongo db
 router.post('/create-group', async (req, res) => {
 	try {
-		const user = await Group.create({
+		const group = await Group.create({
 			name: req.body.group_name,
 			dashboard: {},
 			list: {},
@@ -78,6 +82,48 @@ router.get('/:id', async (req, res) => {
 
 		res.json({ status: 'ok', groups });
 	} catch (err) {
+		res.json({ status: 'error', error: err });
+	}
+});
+
+router.post('/create-new', async (req, res) => {
+	try {
+		const user = await User.findById(req.body.user);
+		const group = await Group.create({
+			name: req.body.name,
+			host: user._id,
+			dashboard: {},
+			list: {},
+		});
+		await Group.updateOne({ _id: group._id }, { $push: { users: user._id } });
+		await User.updateOne({ _id: user._id }, { $push: { groups: group._id } });
+		// console.log('user: ', user, ' group:', group);
+		res.json({ status: 'ok', user, group });
+	} catch (err) {
+		// console.log(err);
+		res.json({ status: 'error', error: err });
+	}
+});
+
+router.delete('/delete-group/:id', async (req, res) => {
+	const token = req.headers['x-access-token'];
+	const decoded = jwt.verify(token, 'secret123');
+	const email = decoded.email;
+	const user = await User.findOne({ email: email });
+	const group = await Group.findById(req.params.id);
+	console.log("host: ", group.host)
+	console.log("user: ", user._id)
+	try {
+		if (group.host.equals(user._id)) {
+			group.users.forEach(async (user) => {
+				await User.updateOne({ _id: user }, { $pull: { groups: group._id } });
+			});
+			await Group.findByIdAndDelete(group._id);
+		} else throw 'User not host';
+		res.json({ status: 'ok', message: 'Group deleted' });
+	} catch (err) {
+		res.status(403);
+		console.log(err);
 		res.json({ status: 'error', error: err });
 	}
 });

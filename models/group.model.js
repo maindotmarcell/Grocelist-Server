@@ -12,6 +12,7 @@ const Group = new mongoose.Schema(
 	{
 		name: { type: String, required: true },
 		users: [{ type: mongoose.Schema.Types.ObjectId, required: false }],
+		host: {type: mongoose.Schema.Types.ObjectId, required: true},
 		dashboard: Dashboard,
 		list: GroceryList,
 	},
