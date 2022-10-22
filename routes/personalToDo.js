@@ -5,41 +5,80 @@ const PersonalTodos = require('../models/todo.model');
 const router = express.Router();
 
 router.post('/', async (req, res) => {
-	try {
-		const todos = PersonalTodos.create({
-			user: req.body.user,
-			todo: req.body.todo,
-			date: req.body.date,
-		});
-		res.status(200);
-		return res.json({ status: 'success' });
-	} catch (err) {
-		res.json({
-			status: 'error',
-			error: 'Oops, something went wrong!.',
-		});
-	}
+  try {
+    const todos = PersonalTodos.create({
+      user: req.body.user,
+      todo: req.body.todo,
+      date: req.body.date,
+    });
+    res.status(200);
+    return res.json({ status: 'success' });
+  } catch (err) {
+    res.json({
+      status: 'error',
+      error: 'Oops, something went wrong!.',
+    });
+  }
 });
 
 router.get('/:id', async (req, res) => {
-	try {
-		console.log('todoroute');
-		console.log(req.params.id);
-		let o_id = new ObjectId(req.params.id);
-		console.log(o_id);
-		const todos = await PersonalTodos.findOne({
-			o_id,
-		});
+  try {
+    console.log(req.params.id);
+    const todos = await PersonalTodos.find({
+      user: req.params.id,
+    });
 
-		console.log(todos);
-		res.status(200);
-		return res.json({ status: 'success', todos });
-	} catch (err) {
-		res.json({
-			status: 'error',
-			error: err,
-		});
-	}
+    console.log(todos);
+    res.status(200);
+    return res.json({ status: 'success', todos });
+  } catch (err) {
+    res.json({
+      status: 'error',
+      error: err,
+    });
+  }
 });
 
-module.exports = router
+router.patch('/:id', async (req, res) => {
+  try {
+    console.log(req.params.id);
+    const todos = await PersonalTodos.findByIdAndUpdate(
+      {
+        _id: req.params.id,
+      },
+      req.body
+    );
+
+    console.log(todos);
+    res.status(200);
+    return res.json({ status: 'success', todos });
+  } catch (err) {
+    res.json({
+      status: 'error',
+      error: err,
+    });
+  }
+});
+
+router.delete('/:id', async (req, res) => {
+  try {
+    console.log(req.params.id);
+    const todos = await PersonalTodos.findByIdAndDelete(
+      {
+        _id: req.params.id,
+      },
+      req.body
+    );
+
+    console.log(todos);
+    res.status(200);
+    return res.json({ status: 'success' });
+  } catch (err) {
+    res.json({
+      status: 'error',
+      error: err,
+    });
+  }
+});
+
+module.exports = router;
