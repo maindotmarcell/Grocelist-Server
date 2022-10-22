@@ -6,10 +6,8 @@ const jwt = require('jsonwebtoken');
 
 const router = express.Router();
 
-
 // passing request through custom authentication middleware
 router.use(validateUser);
-
 
 // ------------------ Development/admin api calls ------------------------
 
@@ -149,15 +147,15 @@ router.get('/get-members/:id', async (req, res) => {
 });
 
 // endpoint to get the grocery list of a group
-router.get('/get-list/:id', async (req,res) => {
+router.get('/get-list/:id', async (req, res) => {
 	const group = await Group.findById(req.params.id);
-	res.json({list: group.list})
-})
+	res.json({ list: group.list });
+});
 
 // endpoint to get the dashboard of a group
-router.get('/get-dashboard/:id', async (req,res) => {
+router.get('/get-dashboard/:id', async (req, res) => {
 	const group = await Group.findById(req.params.id);
-	res.json({dashboard: group.dashboard})
-})
+	res.json({ dashboard: group.dashboard });
+});
 
 module.exports = router;

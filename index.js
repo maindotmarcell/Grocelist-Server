@@ -9,6 +9,7 @@ const authRoute = require('./routes/authentication');
 const groupRoute = require('./routes/groups');
 const todoRoute = require('./routes/personalToDo')
 const reminderRoute = require('./routes/reminder')
+const inviteRoute = require('./routes/invites')
 // ------------------------------ END OF IMPORTS --------------------------------
 
 // Initialising server application
@@ -23,7 +24,8 @@ app.use(cors());
 app.use('/api/authentication', authRoute);
 app.use('/api/groups', groupRoute);
 app.use('/api/personaltodos', todoRoute)
-app.use('/api/reminders/', reminderRoute)
+app.use('/api/reminders', reminderRoute)
+app.use('/api/invites', inviteRoute)
 // ------- END OF ROUTES --------
 
 // ------------------------------ END OF MIDDLEWARE --------------------------------
