@@ -6,9 +6,12 @@ const jwt = require('jsonwebtoken');
 
 const router = express.Router();
 
-// ------------------ Development/admin api calls ------------------------
 
+// passing request through custom authentication middleware
 router.use(validateUser);
+
+
+// ------------------ Development/admin api calls ------------------------
 
 // handles create group request, creates it in mongo db
 router.post('/create-group', async (req, res) => {
@@ -71,6 +74,9 @@ router.post('/add-group-member', async (req, res) => {
 
 // ---------------------- public api calls -----------------------------------
 
+// Groups page endpoints ------------------------------------------------------------------
+
+// endpoint for retrieving groups of current user
 router.get('/:id', async (req, res) => {
 	try {
 		const user = await User.findById(req.params.id);
@@ -86,6 +92,7 @@ router.get('/:id', async (req, res) => {
 	}
 });
 
+// endpoint for current user to create new group
 router.post('/create-new', async (req, res) => {
 	try {
 		const user = await User.findById(req.body.user);
@@ -105,14 +112,15 @@ router.post('/create-new', async (req, res) => {
 	}
 });
 
+// endpoint for current user to delete a group that he/she is a host of
 router.delete('/delete-group/:id', async (req, res) => {
 	const token = req.headers['x-access-token'];
 	const decoded = jwt.verify(token, 'secret123');
 	const email = decoded.email;
 	const user = await User.findOne({ email: email });
 	const group = await Group.findById(req.params.id);
-	console.log("host: ", group.host)
-	console.log("user: ", user._id)
+	console.log('host: ', group.host);
+	console.log('user: ', user._id);
 	try {
 		if (group.host.equals(user._id)) {
 			group.users.forEach(async (user) => {
@@ -127,5 +135,29 @@ router.delete('/delete-group/:id', async (req, res) => {
 		res.json({ status: 'error', error: err });
 	}
 });
+
+// Group Menu endpoints ---------------------------------------------------------------------
+
+// endpoint to get list of members in group
+router.get('/get-members/:id', async (req, res) => {
+	const group = await Group.findById(req.params.id);
+	const promiseUsers = group.users.map(
+		async (user) => (await User.findById(user)).name
+	);
+	const users = await Promise.all(promiseUsers);
+	res.json({ users });
+});
+
+// endpoint to get the grocery list of a group
+router.get('/get-list/:id', async (req,res) => {
+	const group = await Group.findById(req.params.id);
+	res.json({list: group.list})
+})
+
+// endpoint to get the dashboard of a group
+router.get('/get-dashboard/:id', async (req,res) => {
+	const group = await Group.findById(req.params.id);
+	res.json({dashboard: group.dashboard})
+})
 
 module.exports = router;
