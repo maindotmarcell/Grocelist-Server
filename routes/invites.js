@@ -13,20 +13,32 @@ router.use(validateUser);
 router.post('/create-invite', async (req, res) => {
 	try {
 		const invitee = await User.findOne({ email: req.body.invitee });
-		const invite = await Invite.create({
+		const isDuplicate = await Invite.findOne({
 			group: req.body.group,
 			inviter: req.body.inviter,
 			invitee: invitee._id,
 		});
-		res.json({ invite });
+		console.log(isDuplicate);
+		const group = await Group.findById(req.body.group);
+		const inviteeInGroup = group.users.some((user) => user.equals(invitee._id));
+		console.log(inviteeInGroup);
+		if (!isDuplicate && !inviteeInGroup) {
+			const invite = await Invite.create({
+				group: req.body.group,
+				inviter: req.body.inviter,
+				invitee: invitee._id,
+			});
+			res.json({ invite });
+		} else throw 'Invitee is either already in group or already invited.';
 	} catch (err) {
 		console.log(err);
+		res.json({ error: err });
 	}
 });
 
 // endpoint to get invites for display
 router.get('/get-invites/:id', async (req, res) => {
-    console.log("hi");
+	console.log('hi');
 	const invites = await Invite.find({ invitee: req.params.id });
 	const asyncInvites = invites.map(async (invite) => {
 		const inviter = await User.findById(invite.inviter);
@@ -47,6 +59,7 @@ router.put('/accept-invite/:id', async (req, res) => {
 		await Group.updateOne({ _id: group._id }, { $push: { users: user._id } });
 		await User.updateOne({ _id: user.id }, { $push: { groups: group._id } });
 		await Invite.findByIdAndDelete(req.params.id);
+		res.json({msg: "Invite Accepted"})
 	} catch (err) {
 		res.json({ error: err });
 	}
@@ -56,6 +69,7 @@ router.put('/accept-invite/:id', async (req, res) => {
 router.put('/decline-invite/:id', async (req, res) => {
 	try {
 		await Invite.findByIdAndDelete(req.params.id);
+		res.json({msg: "Invite declined"})
 	} catch (err) {
 		res.json({ error: err });
 	}
