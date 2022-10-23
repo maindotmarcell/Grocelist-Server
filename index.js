@@ -21,6 +21,9 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(cors());
 
 // ROUTES
+app.use('/', async (req, res) => {
+  res.json({ msg: 'Hello World' });
+});
 app.use('/api/authentication', authRoute);
 app.use('/api/groups', groupRoute);
 app.use('/api/personaltodos', todoRoute);
