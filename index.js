@@ -27,7 +27,7 @@ app.use('/api/groups', groupRoute);
 app.use('/api/personaltodos', todoRoute);
 app.use('/api/reminders', reminderRoute);
 app.use('/api/invites', inviteRoute);
-app.get('/', (req, res) => res.send('Hello World!'));
+app.use('/', (req, res) => res.send('Hello World!'));
 // ------- END OF ROUTES --------
 
 // ------------------------------ END OF MIDDLEWARE --------------------------------
