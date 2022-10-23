@@ -18,10 +18,8 @@ router.post('/create-invite', async (req, res) => {
 			inviter: req.body.inviter,
 			invitee: invitee._id,
 		});
-		console.log(isDuplicate);
 		const group = await Group.findById(req.body.group);
 		const inviteeInGroup = group.users.some((user) => user.equals(invitee._id));
-		console.log(inviteeInGroup);
 		if (!isDuplicate && !inviteeInGroup) {
 			const invite = await Invite.create({
 				group: req.body.group,
@@ -38,7 +36,6 @@ router.post('/create-invite', async (req, res) => {
 
 // endpoint to get invites for display
 router.get('/get-invites/:id', async (req, res) => {
-	console.log('hi');
 	const invites = await Invite.find({ invitee: req.params.id });
 	const asyncInvites = invites.map(async (invite) => {
 		const inviter = await User.findById(invite.inviter);
