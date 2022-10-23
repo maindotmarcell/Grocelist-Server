@@ -117,8 +117,8 @@ router.delete('/delete-group/:id', async (req, res) => {
 	const email = decoded.email;
 	const user = await User.findOne({ email: email });
 	const group = await Group.findById(req.params.id);
-	console.log('host: ', group.host);
-	console.log('user: ', user._id);
+	// console.log('host: ', group.host);
+	// console.log('user: ', user._id);
 	try {
 		if (group.host.equals(user._id)) {
 			group.users.forEach(async (user) => {
@@ -139,9 +139,13 @@ router.delete('/delete-group/:id', async (req, res) => {
 // endpoint to get list of members in group
 router.get('/get-members/:id', async (req, res) => {
 	const group = await Group.findById(req.params.id);
-	const promiseUsers = group.users.map(
-		async (user) => (await User.findById(user)).name
-	);
+	const promiseUsers = group.users.map(async (userID) => {
+		const user = await User.findById(userID);
+		return {
+			id: user._id,
+			name: user.name,
+		};
+	});
 	const users = await Promise.all(promiseUsers);
 	res.json({ users });
 });
@@ -156,6 +160,20 @@ router.get('/get-list/:id', async (req, res) => {
 router.get('/get-dashboard/:id', async (req, res) => {
 	const group = await Group.findById(req.params.id);
 	res.json({ dashboard: group.dashboard });
+});
+
+// endpoint to delete a member (only for host)
+router.delete('/remove-member', async (req, res) => {
+	try {
+		const user = await User.findById(req.query.user);
+		const group = await Group.findById(req.query.group);
+		await Group.updateOne({ _id: group._id }, { $pull: { users: user._id } });
+		await User.updateOne({ _id: user._id }, { $pull: { groups: group._id } });
+		res.json({ msg: 'Member removed' });
+	} catch (err) {
+		res.status(500);
+		res.json({ error: err });
+	}
 });
 
 module.exports = router;

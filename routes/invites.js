@@ -57,7 +57,7 @@ router.put('/accept-invite/:id', async (req, res) => {
 		const user = await User.findById(invite.invitee);
 		const group = await Group.findById(invite.group);
 		await Group.updateOne({ _id: group._id }, { $push: { users: user._id } });
-		await User.updateOne({ _id: user.id }, { $push: { groups: group._id } });
+		await User.updateOne({ _id: user._id }, { $push: { groups: group._id } });
 		await Invite.findByIdAndDelete(req.params.id);
 		res.json({msg: "Invite Accepted"})
 	} catch (err) {
